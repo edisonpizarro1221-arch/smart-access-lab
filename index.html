@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Access Lab - Control e Inventario de Accesos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+
+        .toast-notificacion {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            background: #1a365d;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            gap: 0.8rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .toast-notificacion.exito { background: #2f855a; }
+        .toast-notificacion.error { background: #c53030; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .top-bar {
+            background-color: #0b1d3a;
+            color: #ecf0f1;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 0.5rem 1rem;
+        }
+
+        header {
+            background-color: #1a365d;
+            color: white;
+            padding: 1rem 2rem;
+        }
+
+        .header-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 500px;
+            display: flex;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 4px 0 0 4px;
+            font-size: 0.95rem;
+        }
+
+        .search-bar button {
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1.2rem;
+            align-items: center;
+        }
+
+        .header-actions a, .header-actions button {
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .cart-btn-header {
+            background: #3182ce;
+            padding: 0.5rem 0.9rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .user-tag-header {
+            background: #2b6cb0;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        nav.nav-bar {
+            background-color: #0f294a;
+            padding: 0 2rem;
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        nav.nav-bar a, .dropdown-btn {
+            color: #cbd5e0;
+            text-decoration: none;
+            padding: 0.8rem 0.5rem;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        nav.nav-bar a:hover, .dropdown:hover .dropdown-btn {
+            color: white;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #ffffff;
+            min-width: 220px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+            z-index: 100;
+            border-radius: 0 0 6px 6px;
+        }
+
+        .dropdown-content a {
+            color: #2c3e50 !important;
+            padding: 12px 16px !important;
+            display: block;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f7fafc;
+            color: #3182ce !important;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .vista {
+            display: none;
+        }
+
+        .vista.activa {
+            display: block;
+        }
+
+        .inicio-section {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .inicio-titulo-principal {
+            font-size: 2.2rem;
+            color: #1a365d;
+            margin-bottom: 0.5rem;
+        }
+
+        .inicio-subtitulo {
+            font-size: 1.1rem;
+            color: #4a5568;
+            max-width: 800px;
+            margin: 0 auto 2rem auto;
+            line-height: 1.6;
+        }
+
+        .problematica-hero {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+            background: #f8fafc;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 2.5rem;
+            text-align: left;
+        }
+
+        .problematica-img {
+            width: 180px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            background-color: #fff;
+            padding: 6px;
+        }
+
+        .problematica-texto {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .problematica-texto h3 {
+            color: #c53030;
+            font-size: 1.4rem;
+            margin-top: 0;
+        }
+
+        .problematica-texto p {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .problematica-texto ul {
+            padding-left: 1.2rem;
+            color: #2d3748;
+        }
+
+        .problematica-texto li {
+            margin-bottom: 0.5rem;
+        }
+
+        .seccion-sectores-titulo {
+            font-size: 1.6rem;
+            color: #1a365d;
+            margin-bottom: 1.5rem;
+        }
+
+        .grid-sectores {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card-sector {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-top: 4px solid #3182ce;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: left;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+
+        .card-sector h4 {
+            font-size: 1.2rem;
+            color: #1a365d;
+            margin-top: 0;
+            margin-bottom: 0.8rem;
+        }
+
+        .card-sector ul {
+            padding-left: 1.2rem;
+            margin: 0;
+            color: #4a5568;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .card-sector li {
+            margin-bottom: 0.6rem;
+        }
+
+        .mantenimiento-banner {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 2.5rem;
+            border-top: 5px solid #1a365d;
+        }
+
+        .repuestos-layout {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .filtros-sidebar {
+            width: 240px;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .filtros-sidebar h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            color: #1a365d;
+            border-bottom: 2px solid #3182ce;
+            padding-bottom: 0.5rem;
+        }
+
+        .grupo-filtro {
+            margin-bottom: 1.5rem;
+        }
+
+        .grupo-filtro h4 {
+            font-size: 0.95rem;
+            color: #1a365d;
+            margin-bottom: 0.6rem;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 0.3rem;
+        }
+
+        .grupo-filtro label {
+            display: block;
+            font-size: 0.88rem;
+            color: #4a5568;
+            margin-bottom: 0.4rem;
+            cursor: pointer;
+        }
+
+        .catalogo-productos {
+            flex: 1;
+        }
+
+        .catalogo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .grid-productos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card-producto {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.2rem;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease;
+        }
+
+        .card-producto:hover {
+            transform: translateY(-4px);
+        }
+
+        .card-producto img {
+            max-width: 100%;
+            height: 130px;
+            object-fit: contain;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+
+        .card-producto .modelo-tag {
+            font-size: 0.75rem;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.3rem;
+        }
+
+        .card-producto h4 {
+            font-size: 0.95rem;
+            color: #1a365d;
+            margin: 0 0 0.5rem 0;
+            cursor: pointer;
+        }
+
+        .card-producto .precio {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2b6cb0;
+            margin-bottom: 0.4rem;
+        }
+
+        .card-producto .stock-badge {
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 0.8rem;
+            color: #2f855a;
+        }
+
+        .card-producto .stock-badge.sin-stock {
+            color: #c53030;
+        }
+
+        .btn-cotizar-prod {
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .btn-cotizar-prod:disabled {
+            background-color: #cbd5e0;
+            cursor: not-allowed;
+        }
+
+        .detalle-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            gap: 3rem;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .detalle-img-box {
+            flex: 1;
+            min-width: 300px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            padding: 2rem;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .detalle-img-box img {
+            max-width: 100%;
+            height: 280px;
+            object-fit: contain;
+        }
+
+        .detalle-info-box {
+            flex: 1.2;
+            min-width: 300px;
+        }
+
+        .detalle-info-box h2 {
+            font-size: 1.8rem;
+            color: #1a365d;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .detalle-precio {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #2b6cb0;
+            margin-bottom: 0.3rem;
+        }
+
+        .detalle-neto {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-bottom: 1.5rem;
+        }
+
+        .detalle-stock {
+            font-size: 0.9rem;
+            color: #2f855a;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+        }
+
+        .compra-acciones {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .selector-cantidad {
+            display: flex;
+            align-items: center;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .selector-cantidad button {
+            background: #f7fafc;
+            border: none;
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #2d3748;
+        }
+
+        .selector-cantidad span {
+            padding: 0.6rem 1.2rem;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .btn-agregar-carro {
+            background-color: #0b1d3a;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            flex: 1;
+        }
+
+        .caja-despacho {
+            border: 1px solid #e2e8f0;
+            padding: 1.2rem;
+            border-radius: 8px;
+            background: #f8fafc;
+            margin-top: 1.5rem;
+        }
+
+        .caja-despacho h4 {
+            margin-top: 0;
+            font-size: 0.95rem;
+            color: #1a365d;
+            margin-bottom: 0.5rem;
+        }
+
+        .caja-despacho p {
+            font-size: 0.88rem;
+            color: #4a5568;
+            margin-bottom: 0.8rem;
+        }
+
+        .caja-despacho select {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        .btn-volver-catalogo {
+            background: none;
+            border: none;
+            color: #3182ce;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0;
+        }
+
+        .carrito-page {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .carrito-items-box {
+            flex: 2;
+            min-width: 320px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .item-carrito-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .item-carrito-card img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+
+        .item-carrito-info {
+            flex: 1;
+        }
+
+        .item-carrito-info h4 {
+            margin: 0 0 0.3rem 0;
+            color: #1a365d;
+        }
+
+        .item-carrito-sku {
+            font-size: 0.78rem;
+            color: #718096;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-carrito-cant-precio {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-vaciar {
+            background: #0b1d3a;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            float: right;
+            margin-top: 1rem;
+        }
+
+        .carrito-resumen-box {
+            flex: 1;
+            min-width: 260px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .resumen-linea {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+            color: #2d3748;
+        }
+
+        .resumen-linea.total {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #1a365d;
+            border-top: 1px solid #cbd5e0;
+            padding-top: 0.8rem;
+        }
+
+        .btn-continuar-compra {
+            background: #4a5568;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-top: 1rem;
+        }
+
+        .checkout-layout {
+            display: flex;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .checkout-main-form {
+            flex: 1.8;
+            min-width: 320px;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .checkout-steps {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            color: #718096;
+        }
+
+        .checkout-steps span.activo {
+            color: #1a365d;
+            font-weight: bold;
+        }
+
+        .checkout-form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .checkout-form-group label {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 0.4rem;
+        }
+
+        .checkout-form-group input, .checkout-form-group select {
+            width: 100%;
+            padding: 0.65rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+
+        .row-2-col {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .row-2-col > div {
+            flex: 1;
+        }
+
+        .toggle-cuenta-box {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .toggle-option {
+            flex: 1;
+            border: 1px solid #cbd5e0;
+            padding: 0.6rem;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .toggle-option.selected {
+            border-color: #1a365d;
+            background: #ebf8ff;
+            color: #1a365d;
+            font-weight: bold;
+        }
+
+        .checkout-summary-sidebar {
+            flex: 1;
+            min-width: 280px;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .btn-ir-entrega {
+            background-color: #1a365d;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            float: right;
+            margin-top: 1.5rem;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.activa {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            border-radius: 12px;
+            padding: 2rem;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: left;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #718096;
+            background: none;
+            border: none;
+        }
+
+        .check-icon-circle {
+            width: 48px;
+            height: 48px;
+            background: #48bb78;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: -40px auto 1rem auto;
+            border: 4px solid white;
+        }
+
+        .modal-prod-detail {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            text-align: left;
+            margin: 1.5rem 0;
+        }
+
+        .modal-prod-detail img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-modal-pagar {
+            background: #0b1d3a;
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 6px;
+            font-weight: bold;
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .btn-modal-ver {
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 6px;
+            font-weight: bold;
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            background: white;
+        }
+        .admin-table th, .admin-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        .admin-table th {
+            background-color: #1a365d;
+            color: white;
+        }
+        .btn-admin-accion {
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        footer {
+            background-color: #1a365d;
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast-notificacion">
+        <span id="toast-icono">✔️</span>
+        <span id="toast-mensaje">Mensaje de notificación</span>
+    </div>
+
+    <div class="top-bar">
+        🚀 Smart Access Lab — Mantenimiento Preventivo y Sistema de Alertas para Accesos Biométricos
+    </div>
+
+    <header>
+        <div class="header-main">
+            <a onclick="cambiarVista('inicio')" class="logo">Smart Access Lab</a>
+            
+            <div class="search-bar">
+                <input type="text" placeholder="Buscar soluciones, módulos o repuestos...">
+                <button type="button">Buscar</button>
+            </div>
+
+            <div class="header-actions" id="header-auth-actions">
+                <button onclick="abrirModalLogin()">🔑 Iniciar Sesión</button>
+                <a onclick="cambiarVista('carrito')" class="cart-btn-header">🛒 Carrito (<span id="cart-count-header">0</span>)</a>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav-bar">
+        <div class="dropdown">
+            <button class="dropdown-btn">Servicios ▾</button>
+            <div class="dropdown-content">
+                <a onclick="cambiarVista('mantenimiento')">Mantenimiento Preventivo</a>
+                <a onclick="cambiarVista('mantenimiento')">Planes de Mantenimiento</a>
+                <a onclick="cambiarVista('mantenimiento')">Soporte de Emergencia</a>
+            </div>
+        </div>
+
+        <div class="dropdown">
+            <button class="dropdown-btn">Repuestos ▾</button>
+            <div class="dropdown-content">
+                <a onclick="mostrarTodos(); cambiarVista('repuestos');">Ver Todos los Componentes</a>
+                <a onclick="seleccionarKit('basico'); cambiarVista('repuestos');">Kit Básico</a>
+                <a onclick="seleccionarKit('intermedio'); cambiarVista('repuestos');">Kit Intermedio</a>
+                <a onclick="seleccionarKit('avanzado'); cambiarVista('repuestos');">Kit Avanzado</a>
+            </div>
+        </div>
+
+        <a onclick="cambiarVista('inicio')">Áreas de Aplicación</a>
+        <a id="nav-admin-link" onclick="cambiarVista('admin')" style="display: none; color: #63b3ed; font-weight: bold;">⚙️ Panel Admin</a>
+        <a href="#contacto">Contacto</a>
+    </nav>
+
+    <div class="container">
+        
+        <div id="vista-inicio" class="vista activa">
+            <section class="inicio-section">
+                <h1 class="inicio-titulo-principal">Soluciones Confiables para Accesos Críticos</h1>
+                <p class="inicio-subtitulo">
+                    Optimizamos la gestión de acceso en instalaciones educativas y corporativas mediante mantenimiento preventivo y un sistema de alertas de contingencia automatizado.
+                </p>
+
+                <div class="problematica-hero">
+                    <img src="huella.png" alt="Lector Biométrico de Huella" class="problematica-img">
+                    <div class="problematica-texto">
+                        <h3>⚠️ La Problemática en los Lectores Biométricos</h3>
+                        <p>
+                            En el entorno universitario, los lectores de huella para ingresar a los laboratorios suelen fallar o no reconocer al docente a la primera. Esto genera cuellos de botella y problemas recurrentes:
+                        </p>
+                        <ul>
+                            <li><strong>Pérdida de Tiempo de Clase:</strong> Docentes e instructores pierden minutos valiosos esperando que el sensor reconozca su huella dactilar.</li>
+                            <li><strong>Inexistencia de Alternativas Directas:</strong> Al no contar con claves de acceso directo (reservadas para el personal técnico) ni llaves de respaldo, la puerta queda bloqueada.</li>
+                            <li><strong>Traslados Innecesarios:</strong> Ante una falla, el profesor o ayudante debe ir manualmente a buscar al personal de soporte técnico para pedir la apertura.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h2 class="seccion-sectores-titulo">Equipamiento y Solución para Cada Necesidad</h2>
+                
+                <div class="grid-sectores">
+                    <div class="card-sector">
+                        <h4>🏫 Instituciones Educativas</h4>
+                        <ul>
+                            <li>Mala administración y pérdida de llaves físicas.</li>
+                            <li>Accesos no autorizados a salas de computación y salas de profesores.</li>
+                            <li>Falta de comunicación automática entre salas y soporte técnico.</li>
+                            <li>Pérdida de tiempo lectivo al inicio de cada bloque de clases.</li>
+                        </ul>
+                    </div>
+
+                    <div class="card-sector">
+                        <h4>🔬 Laboratorios Especializados</h4>
+                        <ul>
+                            <li>Riesgo de contaminación o daño a equipos de alto valor.</li>
+                            <li>Necesidad de restringir el paso solo a personal verificado.</li>
+                            <li>Bloqueos inesperados en puertas biométricas en horarios críticos.</li>
+                            <li>Falta de registro automático ante fallos de ingreso.</li>
+                        </ul>
+                    </div>
+
+                    <div class="card-sector">
+                        <h4>🏢 Edificios, Oficinas y Más</h4>
+                        <ul>
+                            <li>Edificios corporativos, áreas restringidas y centros de datos.</li>
+                            <li>Sistemas de huella sin mantenimiento preventivo periódico.</li>
+                            <li>Altos tiempos de espera ante emergencias o fallas de lectura.</li>
+                            <li>Necesidad de notificaciones por Telegram o correo institucional.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div id="vista-mantenimiento" class="vista">
+            <section class="mantenimiento-banner">
+                <h2>Mantenimiento Preventivo de Accesos Biométricos</h2>
+                <p>Es un conjunto de actividades programadas para optimizar el funcionamiento de los lectores de huella y chapas eléctricas en laboratorios, minimizando fallas de lectura y asegurando que las alertas de contingencia funcionen de forma óptima.</p>
+            </section>
+        </div>
+
+        <!-- VISTA ADMIN -->
+        <div id="vista-admin" class="vista">
+            <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                <h2 style="color: #1a365d; margin-top: 0;">⚙️ Panel de Gestión y Deseabilidad</h2>
+                <p style="color: #4a5568;">Monitorea el interés de los clientes, reabastece stock y revisa carros abandonados:</p>
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>Producto</th>
+                                <th>Stock Actual</th>
+                                <th>Deseabilidad</th>
+                                <th>Ventas Mes</th>
+                                <th>Carros Abandonados</th>
+                                <th>Reponer</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-tabla-body">
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="vista-repuestos" class="vista">
+            <div class="repuestos-layout">
+                
+                <aside class="filtros-sidebar">
+                    <h3>⚙️ Filtros</h3>
+                    
+                    <div class="grupo-filtro">
+                        <h4>Categorías / Kits</h4>
+                        <label><input type="checkbox" class="filtro-chk" value="basico" onchange="aplicarFiltros()"> Kit Básico</label>
+                        <label><input type="checkbox" class="filtro-chk" value="intermedio" onchange="aplicarFiltros()"> Kit Intermedio</label>
+                        <label><input type="checkbox" class="filtro-chk" value="avanzado" onchange="aplicarFiltros()"> Kit Avanzado</label>
+                    </div>
+
+                    <div class="grupo-filtro">
+                        <h4>Componente</h4>
+                        <label><input type="checkbox" class="filtro-chk" value="microcontroladores" onchange="aplicarFiltros()"> Microcontroladores</label>
+                        <label><input type="checkbox" class="filtro-chk" value="biometria" onchange="aplicarFiltros()"> Biometría y Lectores</label>
+                        <label><input type="checkbox" class="filtro-chk" value="teclados" onchange="aplicarFiltros()"> Teclados y Pantallas</label>
+                        <label><input type="checkbox" class="filtro-chk" value="red" onchange="aplicarFiltros()"> Módulos de Red</label>
+                    </div>
+                </aside>
+
+                <div class="catalogo-productos">
+                    <div class="catalogo-header">
+                        <div>
+                            <h2 style="margin: 0; color: #1a365d;">Repuestos y Módulos de Acceso</h2>
+                            <span id="contador-productos" style="font-size: 0.85rem; color: #718096;">Sincronizado con Firestore</span>
+                        </div>
+                    </div>
+
+                    <div class="grid-productos" id="grid-productos-dinamicos"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="vista-detalle" class="vista">
+            <button class="btn-volver-catalogo" onclick="cambiarVista('repuestos')">← Volver al catálogo</button>
+            
+            <div class="detalle-container">
+                <div class="detalle-img-box">
+                    <img id="det-img" src="" alt="Imagen Producto">
+                </div>
+                <div class="detalle-info-box">
+                    <div id="det-modelo" class="modelo-tag" style="font-size: 0.85rem; margin-bottom: 0.4rem;">MODELO</div>
+                    <h2 id="det-titulo">Nombre del Componente</h2>
+                    <div id="det-precio" class="detalle-precio">$0</div>
+                    <div class="detalle-neto">Precio neto</div>
+                    <div id="det-stock" class="detalle-stock">Stock disponible: --</div>
+
+                    <div class="compra-acciones">
+                        <div class="selector-cantidad">
+                            <button onclick="cambiarCantidad(-1)">-</button>
+                            <span id="cantidad-input">1</span>
+                            <button onclick="cambiarCantidad(1)">+</button>
+                        </div>
+                        <button class="btn-agregar-carro" id="btn-add-det" onclick="ejecutarAgregarAlCarro()">Agregar al carro 🛒</button>
+                    </div>
+
+                    <div class="caja-despacho">
+                        <h4>📦 Despachamos a todo Chile</h4>
+                        <p>Selecciona la comuna para visualizar el costo de envío del producto:</p>
+                        <select>
+                            <option>Seleccione su comuna</option>
+                            <option>Santiago</option>
+                            <option>Providencia</option>
+                            <option>Las Condes</option>
+                            <option>Valparaíso</option>
+                            <option>Concepción</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="vista-carrito" class="vista">
+            <h2 style="color: #1a365d;">Carrito (<span id="carrito-cant-tit">0</span> producto)</h2>
+            <div class="carrito-page">
+                <div class="carrito-items-box">
+                    <div id="contenedor-items-carrito"></div>
+                    <button class="btn-vaciar" onclick="vaciarCarritoConAbandono()">Vaciar Carrito</button>
+                </div>
+
+                <div class="carrito-resumen-box">
+                    <div class="resumen-linea">
+                        <span>Subtotal:</span>
+                        <span id="cart-subtotal">$0</span>
+                    </div>
+                    <div class="resumen-linea">
+                        <span>I.V.A (19%):</span>
+                        <span id="cart-iva">$0</span>
+                    </div>
+                    <div class="resumen-linea total">
+                        <span>Total:</span>
+                        <span id="cart-total">$0</span>
+                    </div>
+
+                    <button class="btn-continuar-compra" onclick="cambiarVista('checkout')">Continuar compra</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="vista-checkout" class="vista">
+            <div class="checkout-layout">
+                <div class="checkout-main-form">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <a onclick="cambiarVista('inicio')" class="logo" style="color: #1a365d; font-size: 1.6rem;">Smart Access Lab</a>
+                        <div class="checkout-steps">
+                            <span class="activo">👥 Mis datos</span> ➔ <span>🚚 Entrega</span> ➔ <span>💳 Pagar</span>
+                        </div>
+                    </div>
+
+                    <h2 style="color: #1a365d; margin-top: 0;">Mis datos</h2>
+                    
+                    <div class="checkout-form-group">
+                        <label>Nombre y apellido(s) *</label>
+                        <input type="text" id="chk-nombre" placeholder="Nombre y apellido">
+                    </div>
+
+                    <div class="checkout-form-group row-2-col">
+                        <div>
+                            <label>Email *</label>
+                            <input type="email" id="chk-email" placeholder="correo@ejemplo.com">
+                        </div>
+                        <div>
+                            <label>Teléfono *</label>
+                            <input type="text" id="chk-telefono" placeholder="+56 9 9999 9999">
+                        </div>
+                    </div>
+
+                    <div class="checkout-form-group" id="grupo-password">
+                        <label>Contraseña para cuenta nueva *</label>
+                        <input type="password" id="chk-password" placeholder="Mínimo 6 caracteres">
+                    </div>
+
+                    <div class="checkout-form-group" id="grupo-toggle-cuenta">
+                        <label>Crear cuenta con los datos ingresados</label>
+                        <div class="toggle-cuenta-box">
+                            <div class="toggle-option selected" id="opt-si" onclick="seleccionarCuenta(true)">Sí ☑️</div>
+                            <div class="toggle-option" id="opt-no" onclick="seleccionarCuenta(false)">No ☒</div>
+                        </div>
+                    </div>
+
+                    <h3 style="color: #1a365d; margin-top: 1.8rem;">Dirección de facturación</h3>
+
+                    <div class="checkout-form-group">
+                        <label>Calle y número *</label>
+                        <input type="text" id="chk-calle" placeholder="Dirección de facturación">
+                    </div>
+
+                    <div class="checkout-form-group">
+                        <label>Oficina / Departamento / otros (opcional)</label>
+                        <input type="text" id="chk-depto" placeholder="Detalles de dirección">
+                    </div>
+
+                    <div class="checkout-form-group row-2-col">
+                        <div>
+                            <label>Región: *</label>
+                            <select id="chk-region">
+                                <option value="">Selecciona la región</option>
+                                <option value="Región Metropolitana">Región Metropolitana</option>
+                                <option value="Valparaíso">Valparaíso</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Comuna: *</label>
+                            <select id="chk-comuna">
+                                <option value="">Selecciona la comuna</option>
+                                <option value="Santiago">Santiago</option>
+                                <option value="Providencia">Providencia</option>
+                                <option value="Pudahuel">Pudahuel</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn-ir-entrega" id="btn-submit-checkout" onclick="procesarRegistroFirebase()">Finalizar Compra 🚀</button>
+                    <button class="btn-volver-catalogo" style="margin-top: 1.5rem;" onclick="cambiarVista('repuestos')">‹ Volver a la tienda</button>
+                </div>
+
+                <div class="checkout-summary-sidebar">
+                    <h3 style="margin-top: 0; color: #1a365d;">Transacción Segura 🔒</h3>
+                    <div id="checkout-prod-list" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1rem;"></div>
+
+                    <div class="resumen-linea">
+                        <span>Subtotal:</span>
+                        <span id="chk-subtotal">$0</span>
+                    </div>
+                    <div class="resumen-linea">
+                        <span>I.V.A:</span>
+                        <span id="chk-iva">$0</span>
+                    </div>
+                    <div class="resumen-linea total">
+                        <span>Total:</span>
+                        <span id="chk-total">$0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL DE INICIO DE SESIÓN -->
+    <div id="modal-login" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close-btn" onclick="cerrarModalLogin()">×</button>
+            <h3 style="margin-top: 0; color: #1a365d;">Iniciar Sesión</h3>
+            <div class="checkout-form-group">
+                <label>Correo Electrónico</label>
+                <input type="email" id="login-email" placeholder="correo@ejemplo.com">
+            </div>
+            <div class="checkout-form-group">
+                <label>Contraseña</label>
+                <input type="password" id="login-password" placeholder="Tu contraseña">
+            </div>
+            <button class="btn-modal-pagar" style="width: 100%; margin-top: 1rem;" onclick="ejecutarLogin()">Entrar ➔</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE PRODUCTO AGREGADO -->
+    <div id="modal-agregado" class="modal-overlay">
+        <div class="modal-box" style="text-align: center;">
+            <button class="modal-close-btn" onclick="cerrarModal()">×</button>
+            <div class="check-icon-circle">✓</div>
+            <h3 style="margin: 0; color: #1a365d; font-size: 1.4rem;">Agregaste al carrito</h3>
+            <div class="modal-prod-detail">
+                <img id="modal-img" src="" alt="Producto">
+                <div>
+                    <div id="modal-sku" style="font-size: 0.78rem; color: #718096;">SKU: ---</div>
+                    <h4 id="modal-titulo" style="margin: 0.2rem 0; color: #1a365d;">Nombre Producto</h4>
+                    <div id="modal-precio" style="font-weight: bold; color: #2b6cb0; font-size: 1.1rem;">$0</div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal-pagar" onclick="cerrarModal(); cambiarVista('checkout');">Ir a pagar ➔</button>
+                <button class="btn-modal-ver" onclick="cerrarModal(); cambiarVista('carrito');">Ver carrito 🛒</button>
+            </div>
+        </div>
+    </div>
+
+    <footer id="contacto">
+        <p><strong>Smart Access Lab</strong> | Proyecto de Emprendimiento Universitario</p>
+        <p>Contacto: contacto@smartaccesslab.com</p>
+    </footer>
+
+    <!-- SDK DE FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, getDocs, collection, updateDoc, increment } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyiZpvXt9XaRs31i5SHH1RTqjLc0K7mdA",
+            authDomain: "smart-access-lab.firebaseapp.com",
+            projectId: "smart-access-lab",
+            storageBucket: "smart-access-lab.firebasestorage.app",
+            messagingSenderId: "260498911495",
+            appId: "1:260498911495:web:589a02e937aa896c6755a2",
+            measurementId: "G-RN75VDHMZ8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let inventario = [];
+        let carrito = [];
+        let productoSeleccionado = null;
+        let cantidadSeleccionada = 1;
+        let crearCuentaActivo = true;
+        let usuarioActual = null;
+
+        function mostrarNotificacion(mensaje, tipo = 'exito') {
+            const toast = document.getElementById('toast');
+            const icono = document.getElementById('toast-icono');
+            const texto = document.getElementById('toast-mensaje');
+
+            toast.className = `toast-notificacion ${tipo}`;
+            icono.innerText = (tipo === 'exito') ? '✔️' : '⚠️';
+            texto.innerText = mensaje;
+            toast.style.display = 'flex';
+
+            setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            const headerAuth = document.getElementById('header-auth-actions');
+            const navAdmin = document.getElementById('nav-admin-link');
+
+            if (user) {
+                usuarioActual = user;
+                try {
+                    const docSnap = await getDoc(doc(db, "usuarios", user.uid));
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        document.getElementById('chk-nombre').value = data.nombre || '';
+                        document.getElementById('chk-email').value = data.email || user.email;
+                        document.getElementById('chk-telefono').value = data.telefono || '';
+                        document.getElementById('chk-calle').value = data.direccion || '';
+                        if(data.region) document.getElementById('chk-region').value = data.region;
+                        if(data.comuna) document.getElementById('chk-comuna').value = data.comuna;
+
+                        document.getElementById('grupo-password').style.display = 'none';
+                        document.getElementById('grupo-toggle-cuenta').style.display = 'none';
+
+                        headerAuth.innerHTML = `
+                            <span class="user-tag-header">👤 Hola, ${data.nombre.split(' ')[0]}</span>
+                            <button onclick="cerrarSesion()" style="color:#fed7d7; font-size:0.85rem; cursor:pointer;">Cerrar Sesión</button>
+                            <a onclick="cambiarVista('carrito')" class="cart-btn-header">🛒 Carrito (<span id="cart-count-header">0</span>)</a>
+                        `;
+                    }
+                } catch(e) {
+                    console.log("Error perfil:", e);
+                }
+                if(navAdmin) navAdmin.style.display = 'inline-block';
+            } else {
+                usuarioActual = null;
+                document.getElementById('grupo-password').style.display = 'block';
+                document.getElementById('grupo-toggle-cuenta').style.display = 'block';
+                if(navAdmin) navAdmin.style.display = 'none';
+                headerAuth.innerHTML = `
+                    <button onclick="abrirModalLogin()" style="font-weight:bold;">🔑 Iniciar Sesión</button>
+                    <a onclick="cambiarVista('carrito')" class="cart-btn-header">🛒 Carrito (<span id="cart-count-header">0</span>)</a>
+                `;
+            }
+            actualizarContadorHeader();
+        });
+
+        window.abrirModalLogin = function() { document.getElementById('modal-login').classList.add('activa'); };
+        window.cerrarModalLogin = function() { document.getElementById('modal-login').classList.remove('activa'); };
+
+        window.ejecutarLogin = async function() {
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-password').value;
+            if(!email || !pass) { mostrarNotificacion('Completa los campos', 'error'); return; }
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                cerrarModalLogin();
+                mostrarNotificacion('¡Sesión iniciada!', 'exito');
+            } catch(e) {
+                mostrarNotificacion('Error al iniciar sesión', 'error');
+            }
+        };
+
+        window.cerrarSesion = async function() {
+            await signOut(auth);
+            mostrarNotificacion('Sesión cerrada', 'exito');
+            cambiarVista('inicio');
+        };
+
+        async function cargarInventarioFirestore() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "productos"));
+                if (!querySnapshot.empty) {
+                    let lista = [];
+                    querySnapshot.forEach((docSnap) => {
+                        let data = docSnap.data();
+                        // Vinculamos automáticamente las imágenes locales según el SKU o ID del producto
+                        if (data.sku === 'ESP32-01') data.imagenUrl = 'esp32.png';
+                        else if (data.sku === 'FPM10A-01') data.imagenUrl = 'huella.png';
+                        else if (data.sku === 'KEY-3X4') data.imagenUrl = 'teclado.png';
+                        else if (data.sku === 'LCD-1602') data.imagenUrl = 'lcd.png';
+                        
+                        lista.push({ id: docSnap.id, ...data });
+                    });
+                    inventario = lista;
+                }
+            } catch (e) {
+                console.log("Error inventario:", e);
+            }
+            renderizarCatalogo();
+            renderizarTablaAdmin();
+        }
+
+        function renderizarCatalogo() {
+            const grid = document.getElementById('grid-productos-dinamicos');
+            grid.innerHTML = '';
+            inventario.forEach(prod => {
+                const div = document.createElement('div');
+                div.className = 'card-producto prod-item';
+                div.setAttribute('data-kits', prod.kits ? prod.kits.join(' ') : '');
+                div.setAttribute('data-comp', prod.categoria || '');
+
+                const tieneStock = prod.stock > 0;
+                div.innerHTML = `
+                    <img src="${prod.imagenUrl || ''}" alt="${prod.nombre}" onclick="verDetalle('${prod.sku}')">
+                    <div class="modelo-tag">Modelo: ${prod.modelo || prod.sku}</div>
+                    <h4 onclick="verDetalle('${prod.sku}')">${prod.nombre}</h4>
+                    <div class="precio">$${prod.precio.toLocaleString('es-CL')}</div>
+                    <div class="stock-badge ${tieneStock ? '' : 'sin-stock'}">
+                        ${tieneStock ? `Stock: ${prod.stock} unid.` : '❌ AGOTADO'}
+                    </div>
+                    <button class="btn-cotizar-prod" ${tieneStock ? '' : 'disabled'} onclick="verDetalle('${prod.sku}')">
+                        ${tieneStock ? 'Ver Detalle' : 'Agotado'}
+                    </button>
+                `;
+                grid.appendChild(div);
+            });
+            aplicarFiltros();
+        }
+
+        function renderizarTablaAdmin() {
+            const tbody = document.getElementById('admin-tabla-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            inventario.forEach(prod => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${prod.sku}</strong></td>
+                    <td>${prod.nombre}</td>
+                    <td><span style="font-weight: bold; color: ${prod.stock > 0 ? '#2f855a' : '#c53030'};">${prod.stock} unid.</span></td>
+                    <td>${prod.deseabilidad || 0} veces</td>
+                    <td>${prod.ventasMes || 0} unid.</td>
+                    <td>${prod.abandonosCarro || 0} veces</td>
+                    <td>
+                        <button class="btn-admin-accion" onclick="reponerStock('${prod.id || prod.sku}', 5)">+5</button>
+                        <button class="btn-admin-accion" onclick="reponerStock('${prod.id || prod.sku}', 10)" style="background:#2b6cb0;">+10</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.reponerStock = async function(docId, cantidad) {
+            try {
+                const docRef = doc(db, "productos", docId);
+                await updateDoc(docRef, { stock: increment(cantidad) });
+                mostrarNotificacion(`¡Se sumaron ${cantidad} unidades!`, 'exito');
+                cargarInventarioFirestore();
+            } catch(e) {
+                mostrarNotificacion('Error al reponer stock', 'error');
+            }
+        };
+
+        window.cambiarVista = function(vistaDestino) {
+            document.querySelectorAll('.vista').forEach(v => v.classList.remove('activa'));
+            if (document.getElementById(`vista-${vistaDestino}`)) {
+                document.getElementById(`vista-${vistaDestino}`).classList.add('activa');
+            }
+            if (vistaDestino === 'carrito') renderizarCarrito();
+            if (vistaDestino === 'checkout') renderizarCheckout();
+            if (vistaDestino === 'admin') renderizarTablaAdmin();
+            window.scrollTo(0, 0);
+        };
+
+        window.verDetalle = function(sku) {
+            productoSeleccionado = inventario.find(p => p.sku === sku);
+            if (!productoSeleccionado) return;
+
+            document.getElementById('det-titulo').innerText = productoSeleccionado.nombre;
+            document.getElementById('det-modelo').innerText = `SKU: ${productoSeleccionado.sku}`;
+            document.getElementById('det-precio').innerText = `$${productoSeleccionado.precio.toLocaleString('es-CL')}`;
+            document.getElementById('det-img').src = productoSeleccionado.imagenUrl || '';
+            
+            const elStock = document.getElementById('det-stock');
+            const btnAdd = document.getElementById('btn-add-det');
+
+            if (productoSeleccionado.stock > 0) {
+                elStock.innerText = `✔️ Stock disponible: ${productoSeleccionado.stock} unidades`;
+                elStock.style.color = '#2f855a';
+                btnAdd.disabled = false;
+            } else {
+                elStock.innerText = `❌ Producto Agotado`;
+                elStock.style.color = '#c53030';
+                btnAdd.disabled = true;
+            }
+            cantidadSeleccionada = 1;
+            document.getElementById('cantidad-input').innerText = cantidadSeleccionada;
+            cambiarVista('detalle');
+        };
+
+        window.cambiarCantidad = function(cambio) {
+            if (!productoSeleccionado) return;
+            cantidadSeleccionada += cambio;
+            if (cantidadSeleccionada < 1) cantidadSeleccionada = 1;
+            if (cantidadSeleccionada > productoSeleccionado.stock) {
+                cantidadSeleccionada = productoSeleccionado.stock;
+                mostrarNotificacion(`Límite disponible (${productoSeleccionado.stock})`, 'error');
+            }
+            document.getElementById('cantidad-input').innerText = cantidadSeleccionada;
+        };
+
+        window.ejecutarAgregarAlCarro = async function() {
+            if (!productoSeleccionado || productoSeleccionado.stock <= 0) return;
+            
+            const index = carrito.findIndex(item => item.sku === productoSeleccionado.sku);
+            if (index > -1) {
+                if (carrito[index].cantidad + cantidadSeleccionada > productoSeleccionado.stock) {
+                    mostrarNotificacion('Superas el stock disponible', 'error');
+                    return;
+                }
+                carrito[index].cantidad += cantidadSeleccionada;
+            } else {
+                carrito.push({ ...productoSeleccionado, cantidad: cantidadSeleccionada });
+            }
+
+            try {
+                const docRef = doc(db, "productos", productoSeleccionado.id || productoSeleccionado.sku);
+                await updateDoc(docRef, { deseabilidad: increment(1) });
+            } catch(e) {
+                console.log("Error deseabilidad:", e);
+            }
+
+            actualizarContadorHeader();
+            document.getElementById('modal-titulo').innerText = productoSeleccionado.nombre;
+            document.getElementById('modal-sku').innerText = `SKU: ${productoSeleccionado.sku}`;
+            document.getElementById('modal-precio').innerText = `$${productoSeleccionado.precio.toLocaleString('es-CL')}`;
+            document.getElementById('modal-img').src = productoSeleccionado.imagenUrl || '';
+            document.getElementById('modal-agregado').classList.add('activa');
+        };
+
+        window.cerrarModal = function() { document.getElementById('modal-agregado').classList.remove('activa'); };
+
+        function actualizarContadorHeader() {
+            const totalCant = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+            const badge = document.getElementById('cart-count-header');
+            if(badge) badge.innerText = totalCant;
+        }
+
+        function renderizarCarrito() {
+            const contenedor = document.getElementById('contenedor-items-carrito');
+            const titCant = document.getElementById('carrito-cant-tit');
+            contenedor.innerHTML = '';
+            const totalItems = carrito.reduce((acc, i) => acc + i.cantidad, 0);
+            titCant.innerText = totalItems;
+            let subtotal = 0;
+
+            carrito.forEach((item, index) => {
+                subtotal += item.precio * item.cantidad;
+                const div = document.createElement('div');
+                div.className = 'item-carrito-card';
+                div.innerHTML = `
+                    <img src="${item.imagenUrl || ''}" alt="${item.nombre}">
+                    <div class="item-carrito-info">
+                        <h4>${item.nombre}</h4>
+                        <div class="item-carrito-sku">SKU: ${item.sku}</div>
+                        <div class="item-carrito-cant-precio">
+                            <span>Cantidad: <strong>${item.cantidad}</strong></span>
+                            <span>Precio: <strong>$${item.precio.toLocaleString('es-CL')}</strong></span>
+                        </div>
+                    </div>
+                    <button style="border:none; background:none; cursor:pointer; font-size:1.2rem;" onclick="eliminarItem(${index})">🗑️</button>
+                `;
+                contenedor.appendChild(div);
+            });
+
+            const iva = Math.round(subtotal * 0.19);
+            const total = subtotal + iva;
+            document.getElementById('cart-subtotal').innerText = `$${subtotal.toLocaleString('es-CL')}`;
+            document.getElementById('cart-iva').innerText = `$${iva.toLocaleString('es-CL')}`;
+            document.getElementById('cart-total').innerText = `$${total.toLocaleString('es-CL')}`;
+        }
+
+        window.eliminarItem = function(index) { carrito.splice(index, 1); actualizarContadorHeader(); renderizarCarrito(); };
+        
+        window.vaciarCarritoConAbandono = async function() {
+            if(carrito.length > 0) {
+                for(let item of carrito) {
+                    try {
+                        const docRef = doc(db, "productos", item.id || item.sku);
+                        await updateDoc(docRef, { abandonosCarro: increment(item.cantidad) });
+                    } catch(e) {
+                        console.log("Error abandono:", e);
+                    }
+                }
+            }
+            carrito = [];
+            actualizarContadorHeader();
+            renderizarCarrito();
+            mostrarNotificacion('Carrito vaciado y registrado en analíticas', 'error');
+        };
+
+        window.vaciarCarrito = function() {
+            carrito = [];
+            actualizarContadorHeader();
+            renderizarCarrito();
+        };
+
+        function renderizarCheckout() {
+            const box = document.getElementById('checkout-prod-list');
+            box.innerHTML = '';
+            let subtotal = 0;
+            carrito.forEach(item => {
+                subtotal += item.precio * item.cantidad;
+                const p = document.createElement('div');
+                p.style.fontSize = '0.88rem';
+                p.style.marginBottom = '0.5rem';
+                p.innerHTML = `<strong>${item.nombre}</strong><br><span style="color:#718096;">Cant: ${item.cantidad} — $${(item.precio * item.cantidad).toLocaleString('es-CL')}</span>`;
+                box.appendChild(p);
+            });
+            const iva = Math.round(subtotal * 0.19);
+            const total = subtotal + iva;
+            document.getElementById('chk-subtotal').innerText = `$${subtotal.toLocaleString('es-CL')}`;
+            document.getElementById('chk-iva').innerText = `+ $${iva.toLocaleString('es-CL')}`;
+            document.getElementById('chk-total').innerText = `$${total.toLocaleString('es-CL')}`;
+        }
+
+        window.seleccionarCuenta = function(crear) {
+            crearCuentaActivo = crear;
+            if (crear) {
+                document.getElementById('opt-si').classList.add('selected');
+                document.getElementById('opt-no').classList.remove('selected');
+                document.getElementById('grupo-password').style.display = 'block';
+            } else {
+                document.getElementById('opt-no').classList.add('selected');
+                document.getElementById('opt-si').classList.remove('selected');
+                document.getElementById('grupo-password').style.display = 'none';
+            }
+        };
+
+        function limpiarFormularioCheckout() {
+            if (!usuarioActual) {
+                document.getElementById('chk-nombre').value = '';
+                document.getElementById('chk-email').value = '';
+                document.getElementById('chk-telefono').value = '';
+                document.getElementById('chk-calle').value = '';
+                document.getElementById('chk-depto').value = '';
+                document.getElementById('chk-region').value = '';
+                document.getElementById('chk-comuna').value = '';
+                document.getElementById('chk-password').value = '';
+            }
+            vaciarCarrito();
+        }
+
+        async function descontarInventarioYRegistrarVentas() {
+            for (let item of carrito) {
+                const prod = inventario.find(p => p.sku === item.sku);
+                if (prod) prod.stock -= item.cantidad;
+
+                try {
+                    const docRef = doc(db, "productos", item.id || item.sku);
+                    await updateDoc(docRef, { 
+                        stock: increment(-item.cantidad),
+                        ventasMes: increment(item.cantidad)
+                    });
+                } catch(e) {
+                    console.log("Error ventas/stock:", e);
+                }
+            }
+            cargarInventarioFirestore();
+        }
+
+        window.procesarRegistroFirebase = async function() {
+            if (carrito.length === 0) { mostrarNotificacion('El carrito está vacío', 'error'); return; }
+
+            const nombre = document.getElementById('chk-nombre').value.trim();
+            const email = document.getElementById('chk-email').value.trim();
+            const telefono = document.getElementById('chk-telefono').value.trim();
+            const calle = document.getElementById('chk-calle').value.trim();
+            const region = document.getElementById('chk-region').value;
+            const comuna = document.getElementById('chk-comuna').value;
+            const password = document.getElementById('chk-password').value;
+
+            if (!nombre || !email || !telefono || !calle) {
+                mostrarNotificacion('Completa los campos obligatorios (*)', 'error');
+                return;
+            }
+
+            try {
+                if (usuarioActual) {
+                    await descontarInventarioYRegistrarVentas();
+                    mostrarNotificacion('¡Compra procesada con éxito!', 'exito');
+                    setTimeout(() => { limpiarFormularioCheckout(); cambiarVista('inicio'); }, 2200);
+                } else if (crearCuentaActivo) {
+                    if (!password || password.length < 6) {
+                        mostrarNotificacion('Contraseña mínimo de 6 caracteres', 'error');
+                        return;
+                    }
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await setDoc(doc(db, "usuarios", userCredential.user.uid), {
+                        nombre, email, telefono, direccion: calle, region, comuna, fechaRegistro: new Date().toISOString()
+                    });
+                    await descontarInventarioYRegistrarVentas();
+                    mostrarNotificacion('¡Cuenta creada y compra exitosa!', 'exito');
+                    setTimeout(() => { limpiarFormularioCheckout(); cambiarVista('inicio'); }, 2200);
+                } else {
+                    await descontarInventarioYRegistrarVentas();
+                    mostrarNotificacion('¡Compra como invitado exitosa!', 'exito');
+                    setTimeout(() => { limpiarFormularioCheckout(); cambiarVista('inicio'); }, 2200);
+                }
+            } catch (error) {
+                if (error.code === 'auth/email-already-in-use') {
+                    mostrarNotificacion('El correo ya está registrado. Inicia sesión arriba.', 'error');
+                } else {
+                    mostrarNotificacion('Error: ' + error.message, 'error');
+                }
+            }
+        };
+
+        window.mostrarTodos = function() { document.querySelectorAll('.filtros-sidebar input').forEach(c => c.checked = false); aplicarFiltros(); };
+        
+        window.seleccionarKit = function(kit) { 
+            document.querySelectorAll('.filtros-sidebar input').forEach(c => {
+                c.checked = (c.value === kit);
+            }); 
+            aplicarFiltros(); 
+        };
+
+        window.aplicarFiltros = function() {
+            const checksKits = Array.from(document.querySelectorAll('.filtro-chk[value="basico"], .filtro-chk[value="intermedio"], .filtro-chk[value="avanzado"]')).filter(c => c.checked).map(c => c.value);
+            const checksComp = Array.from(document.querySelectorAll('.filtro-chk:not([value="basico"]):not([value="intermedio"]):not([value="avanzado"])')).filter(c => c.checked).map(c => c.value);
+
+            let visibles = 0;
+            document.querySelectorAll('.prod-item').forEach(prod => {
+                const kitsProd = (prod.getAttribute('data-kits') || '').split(' ');
+                const compProd = prod.getAttribute('data-comp') || '';
+                
+                let pasaKit = (checksKits.length === 0) || checksKits.some(k => kitsProd.includes(k));
+                let pasaComp = (checksComp.length === 0) || checksComp.includes(compProd);
+
+                if (pasaKit && pasaComp) { prod.style.display = 'flex'; visibles++; }
+                else { prod.style.display = 'none'; }
+            });
+            document.getElementById('contador-productos').innerText = `${visibles} componente(s) disponible(s)`;
+        };
+
+        window.onload = function() { cargarInventarioFirestore(); };
+    </script>
+
+</body>
+</html>
